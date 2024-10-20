@@ -57,7 +57,7 @@ class TopTile:
 		self.level.renderTile128(self.get_coord(), self.id)
 
 	def __str__(self):
-		return(f"{self.__class__.__name__}")
+		return(f"{self.__class__.__name__} {self.id}")
 
 
 
@@ -545,6 +545,79 @@ class halveChestTile(TopTile):
 				self.level.switch_top(mycoord, coord)
 
 
+class snaileTile(TopTile):
+	def __init__(self, id):
+		super().__init__(id)
+		self.is_moved = False
+
+		self.id_get = {
+			#id: dir attach nextid, otherdir, otherid
+			121: (8, 4, 124, 7, 122),
+			124: (6, 8, 123, 9, 121),
+			123: (2, 6, 122, 3, 124), 
+			122: (4, 2, 121, 1, 123), 
+
+			117: (2, 4, 118, 1, 120), 
+			118: (6, 2, 119, 3, 117), 
+			119: (8, 6, 120, 9, 118),
+			120: (4, 8, 117, 7, 119),
+		}
 
 
-	
+	def move_sprite(self):
+		if self.is_moved: # move me only once each round
+			return
+		id = self.id
+		coord = None
+
+		
+
+		# move strait
+		dir, attach, nextid, otherdir, otherid = self.id_get[id]
+		coord = self.level.move_coord(dir, self.get_coord())
+		tile = self.level.getTile(coord)
+		attachcoord = self.level.move_coord(attach, coord)
+		attachtile = self.level.getTile(attachcoord)
+		if tile.topTile and tile.topTile.__class__.__name__ == "tvTile":
+			tile.remove_top()
+			self.floor_tile.remove_top()
+			tile.put_top(ChestTile())
+			return
+		if tile.is_free() and not attachtile.is_free():
+			print(f"aa {id} {dir} {attach} {coord} {attachcoord} {attachtile.is_free()} {attachtile}")
+			self.level.switch_top(self.get_coord(), coord)
+			self.is_moved = True
+			return
+		
+		# diagonal and rotate if we are on a pike
+		_dir, attach, _nextid, _otherdir, _otherid = self.id_get[otherid]
+		coord = self.level.move_coord(otherdir, self.get_coord())
+		tile = self.level.getTile(coord)
+		attachcoord = self.level.move_coord(attach, coord)
+		attachtile = self.level.getTile(attachcoord)
+		if tile.is_free() and not attachtile.is_free():
+			print(f" yy {id} {otherdir} {otherid}")
+			self.id = otherid
+			self.level.switch_top(self.get_coord(), coord)
+			self.is_moved = True
+			return
+		
+		# rotate if we are in a corner
+		_dir, attach, _nextid, _otherdir, _otherid = self.id_get[nextid]
+		coord = self.get_coord()
+		tile = self.level.getTile(coord)
+		attachcoord = self.level.move_coord(attach, coord)
+		attachtile = self.level.getTile(attachcoord)
+		if not attachtile.is_free():
+			print(f" xx {coord} {attachcoord} {dir}")
+			self.id = nextid
+			self.is_moved = True
+			self.render()
+			return
+		else:
+			self.id = nextid
+			self.render()
+		
+class tvTile(TopTile):
+	def enter(self, mycoord, coord):
+		return False

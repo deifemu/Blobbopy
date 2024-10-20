@@ -117,14 +117,26 @@ class Level:
 
 
 	def move_coord(self, dir, coord):
-		if dir == 4:
+		if dir == 1:
+			return coord[0] - 1, coord[1] - 1
+		elif dir == 2:  #
+			return coord[0],     coord[1] - 1
+		elif dir == 3:
+			return coord[0] + 1, coord[1] - 1
+		
+		elif dir == 4: #
 			return coord[0] - 1, coord[1]
-		elif dir == 6:
+		elif dir == 5:
+			return coord[0]    , coord[1]
+		elif dir == 6: #
 			return coord[0] + 1, coord[1]
-		elif dir == 2:
-			return coord[0], coord[1] - 1
-		elif dir == 8:
-			return coord[0], coord[1] + 1
+		
+		elif dir == 7:
+			return coord[0] - 1, coord[1] + 1
+		elif dir == 8: #
+			return coord[0],     coord[1] + 1
+		elif dir == 9:
+			return coord[0] + 1, coord[1] + 1
 		else:
 			return None
 
@@ -164,8 +176,13 @@ class Level:
 		for tile in self.tiles.values():
 			if tile.topTile:
 				tile.topTile.is_moved = False # make sure we only move once
-		for tile in self.tiles.values():
-			tile.move_sprite()
+		#for tile in self.tiles.values():
+			#tile.move_sprite()
+		
+		for y in range(0, self.game.y):
+			for x in range(0, self.game.x):
+				tile = self.getTile((x,y))
+				tile.move_sprite()
 
 
 

@@ -111,6 +111,13 @@ def makeTile(level, coord, id):
 	elif id == 223:
 		lvl =  FreeTile()
 		lvl.put_top(halveChestTile(id, False))
+	elif id in [117, 118, 119, 120, 121, 122, 123, 124]:
+		lvl =  FreeTile()
+		lvl.put_top(snaileTile(id))
+		level.add_chest()
+	elif id == 50:
+		lvl =  FreeTile()
+		lvl.put_top(tvTile(id))
 
 	else:
 		print(f"unknown tile {id}")
@@ -233,7 +240,7 @@ class Tile:
 
 	def __str__(self):
 		if self.topTile:
-			return(f"{self.__class__.__name__} {self.id} at {self.coord} with {self.topTile.__class__.__name__}")
+			return(f"{self.__class__.__name__} {self.id} at {self.coord} with {self.topTile}")
 		return(f"{self.__class__.__name__} {self.id} at {self.coord}")
 
 
@@ -275,11 +282,11 @@ class FireTile(Tile):
 
 class EndTile(Tile):
 	def __init__(self, id, hidden=False):
-		self.can_enter = True
 		if hidden:
 			super().__init__(0)
 		else:
 			super().__init__(id)
+		self.can_enter = True
 		self.hidden = hidden
 
 
