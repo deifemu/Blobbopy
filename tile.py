@@ -98,10 +98,17 @@ def makeTile(level, coord, id):
 	elif id == 133:
 		lvl =  FreeTile()
 		lvl.put_top(glassesTile(id))
+	elif id == 33:
+		lvl =  oneWayTile(id, 6)
+	elif id == 34:
+		lvl =  oneWayTile(id, 2)
 	elif id == 35:
-		lvl =  oneWayTile(id)
+		lvl =  oneWayTile(id, 4)
+	elif id == 36:
+		lvl =  oneWayTile(id, 8)
 	elif id == 58:
-		lvl =  holeTile(id)
+		lvl =  FreeTile()
+		lvl.put_top(holeTile(id))
 	elif id == 86:
 		lvl =  iceTile(id)
 	elif id == 207:
@@ -113,11 +120,17 @@ def makeTile(level, coord, id):
 		lvl.put_top(halveChestTile(id, False))
 	elif id in [117, 118, 119, 120, 121, 122, 123, 124]:
 		lvl =  FreeTile()
-		lvl.put_top(snaileTile(id))
+		lvl.put_top(snailTile(id))
 		level.add_chest()
 	elif id == 50:
 		lvl =  FreeTile()
 		lvl.put_top(tvTile(id))
+	elif id == 103:
+		lvl =  FreeTile()
+		lvl.put_top(multyArrowTile(id))
+	elif id == 210:
+		lvl =  FreeTile()
+		lvl.put_top(plugTile(id))
 
 	else:
 		print(f"unknown tile {id}")
@@ -193,6 +206,12 @@ class Tile:
 			return self.topTile.is_teleport_target()
 	def is_water(self):
 		return False
+	
+	def is_hole(self):
+		if not self.topTile:
+			return False
+		else:
+			return self.topTile.__class__.__name__ == "holeTile"
 
 
 	def enter(self, coord):
@@ -350,20 +369,22 @@ class WaterTile(Tile):
 
 
 class oneWayTile(Tile):
-	def __init__(self, id):
+	def __init__(self, id, dir):
 		super().__init__(id)
+		self.dir = dir
 
 	def enter(self, coord):
 		print(coord, self.get_coord())
-		if coord[0] > self.get_coord()[0]:
-			print("enter")
+		if ((self.dir == 4) and (coord[0] >= self.get_coord()[0])) or (
+			(self.dir == 6) and (coord[0] <= self.get_coord()[0])) or (
+			(self.dir == 2) and (coord[1] >= self.get_coord()[1])) or (
+			(self.dir == 8) and (coord[1] <= self.get_coord()[1])):
+
 			if self.level.getTile(coord).leave(self.coord):
 				self.level.switch_top(self.coord, coord)
 			return True
 		return False
 	
-class holeTile(Tile):
-	pass
 	
 class iceTile(Tile):
 	def __init__(self, id):

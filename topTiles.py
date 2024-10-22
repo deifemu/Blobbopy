@@ -113,6 +113,9 @@ class BallTile(TopTile):
 	def touch(self, coord):
 		# print("touch")
 		self.is_active = True
+		orgcoord = self.get_coord()
+		if self.drop(0):
+			self.level.touch_neibours(orgcoord)
 
 	def enter(self, mycoord, coord):
 		# push the ball horizontally
@@ -121,10 +124,11 @@ class BallTile(TopTile):
 			return True
 		return False
 
-	def loop(self, cordi):
-		if not self.is_active:
-			return False
+	def drop(self, cordi):
+		# if not self.is_active:
+		# 	return False
 		
+		drop = False
 		moreLoop = True
 		while moreLoop:
 			moreLoop = False
@@ -137,13 +141,13 @@ class BallTile(TopTile):
 			coord2C = mycoord[0] +1, mycoord[1]
 
 			# balls do not drop on the initial screen until they have been touched
-			if self.is_initial:
-				self.is_initial = False
-				if self.level.tiles[*coord0].is_free() or (
-						self.level.tiles[*coord0].slope_right() and self.level.tiles[*coord1].is_free() and self.level.tiles[*coord1C].is_free()) or (
-						self.level.tiles[*coord0].slope_left() and self.level.tiles[*coord2].is_free() and self.level.tiles[*coord2C].is_free()):
-					self.is_active = False
-					return
+			# if self.is_initial:
+			# 	self.is_initial = False
+			# 	if self.level.tiles[*coord0].is_free() or (
+			# 			self.level.tiles[*coord0].slope_right() and self.level.tiles[*coord1].is_free() and self.level.tiles[*coord1C].is_free()) or (
+			# 			self.level.tiles[*coord0].slope_left() and self.level.tiles[*coord2].is_free() and self.level.tiles[*coord2C].is_free()):
+			# 		self.is_active = False
+			# 		return False
 
 			if self.level.tiles[*coord0].is_blobbo():
 				if self.dropping:
@@ -153,22 +157,26 @@ class BallTile(TopTile):
 				self.level.switch_top(coord0, mycoord)
 				self.dropping = True
 				moreLoop =  True
+				drop = True
 			elif self.level.tiles[*coord0].slope_right() and self.level.tiles[*coord1].is_free() and self.level.tiles[*coord1C].is_free():
 				# print("drop 2")
 				self.level.switch_top(coord1, mycoord)
 				self.dropping = True
 				moreLoop =  True
+				drop = True
 			elif self.level.tiles[*coord0].slope_left() and self.level.tiles[*coord2].is_free() and self.level.tiles[*coord2C].is_free():
 				# print("drop 3")
 				self.level.switch_top(coord2, mycoord)
 				self.dropping = True
 				moreLoop =  True
+				drop = True
 			else:
 				self.dropping = False
 			
 			if moreLoop:
 				self.level.game.updateScreen()
 				time.sleep(0.02)
+		return drop
 
 
 
@@ -189,6 +197,15 @@ class ArrowTile(TopTile):
 			id = 194
 		self.fireing = False
 		super().__init__(id)
+
+
+	def enter(self, mycoord, coord):
+		if coord[0] != mycoord[0]:
+			return False
+		coord3 = 2*mycoord[0] - coord[0], 2*mycoord[1] - coord[1]
+		if self.level.getTile(coord3).is_free():
+			self.level.switch_top(coord3, mycoord)
+			self.level.switch_top(coord, mycoord)
 
 	def move_sprite(self):
 		more_move = True
@@ -251,7 +268,7 @@ class WeedTile(TopTile):
 	
 
 	def loop(self, mycoord):
-		pass
+		return False
 
 	def move_sprite(self):
 		if self.level.item == "glasses":
@@ -293,6 +310,17 @@ class WeedTile(TopTile):
 class PushStoneTile(TopTile):
 	def enter(self, mycoord, coord):
 		if self.level.push(coord, mycoord):
+			self.level.switch_top(mycoord, coord)
+
+class plugTile(TopTile):
+	def enter(self, mycoord, coord):
+		coord3 = 2*mycoord[0] - coord[0], 2*mycoord[1] - coord[1]
+		if self.level.getTile(coord3).is_free():
+			self.level.switch_top(coord3, mycoord)
+			self.level.switch_top(mycoord, coord)
+		if self.level.getTile(coord3).is_hole():
+			self.level.getTile(coord3).remove_top()
+			self.level.getTile(mycoord).remove_top()
 			self.level.switch_top(mycoord, coord)
 
 class SmileTile(TopTile):
@@ -485,7 +513,7 @@ class sunTile(TopTile):
 			tile = self.level.getTile(coord)
 			if tile.is_blobbo():
 				self.level.die()
-			if tile.__class__.__name__ == "holeTile":
+			if tile.topTile and tile.topTile.__class__.__name__ == "holeTile":
 				self.floor_tile.remove_top()
 				return
 			if tile.is_free():
@@ -545,7 +573,7 @@ class halveChestTile(TopTile):
 				self.level.switch_top(mycoord, coord)
 
 
-class snaileTile(TopTile):
+class snailTile(TopTile):
 	def __init__(self, id):
 		super().__init__(id)
 		self.is_moved = False
@@ -621,3 +649,42 @@ class snaileTile(TopTile):
 class tvTile(TopTile):
 	def enter(self, mycoord, coord):
 		return False
+	
+
+	
+
+class multyArrowTile(TopTile):
+	def __init__(self, id):
+		super().__init__(id)
+		self.is_moved = False
+
+	def move_sprite(self):
+		for move in [(1,0), (-1,0), (0,1), (0,-1)]:
+			coord = self.get_coord()
+			while True:
+				coord = (coord[0] + move[0], coord[1] + move[1])
+				target = self.level.getTile(coord)
+				if target.is_blobbo():
+					self.kill_blobbo(move)
+					return
+				elif not target.is_free():
+					break
+
+	def kill_blobbo(self, move):
+		coord = self.get_coord()
+		while True:
+			coord = (coord[0] + move[0], coord[1] + move[1])
+			target = self.level.getTile(coord)
+			if target.is_blobbo():
+				self.level.die()
+				return
+			self.level.switch_top(self.get_coord(), coord)
+			self.level.game.updateScreen()
+			time.sleep(0.04)
+
+
+
+
+class holeTile(TopTile):
+	pass
+

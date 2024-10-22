@@ -33,9 +33,7 @@ class Level:
 		self.item = item
 
 
-	def loop(self):
-		for tile in self.tiles.values():
-			tile.loop()
+
 
 
 
@@ -100,6 +98,7 @@ class Level:
 		target_tile = self.getTile(ncoord)
 
 		if target_tile.enter(coord):
+			self.touch_neibours(coord)
 			self.touch_neibours(ncoord)
 		self.move_sprite()
 			
@@ -141,14 +140,19 @@ class Level:
 			return None
 
 	def touch_neibours(self, coord):
-		self.tiles[coord[0] + 1, coord[1]-1].touch(coord)
-		self.tiles[coord[0]    , coord[1]-1].touch(coord)
-		self.tiles[coord[0] - 1, coord[1]-1].touch(coord)
-		self.tiles[coord[0] + 1, coord[1]+1].touch(coord)
-		self.tiles[coord[0]    , coord[1]+1].touch(coord)
-		self.tiles[coord[0] - 1, coord[1]+1].touch(coord)
-		self.tiles[coord[0] + 1, coord[1]].touch(coord)
-		self.tiles[coord[0] - 1, coord[1]].touch(coord)
+		self.tiles[coord[0] - 1, coord[1]    ].touch(coord)
+		self.tiles[coord[0] + 1, coord[1]    ].touch(coord)
+		
+
+		self.tiles[coord[0] - 1, coord[1] - 1].touch(coord)
+		self.tiles[coord[0]    , coord[1] - 1].touch(coord)
+		self.tiles[coord[0] + 1, coord[1] - 1].touch(coord)
+		
+		self.tiles[coord[0] + 1, coord[1] + 1].touch(coord)
+		self.tiles[coord[0]    , coord[1] + 1].touch(coord)
+		self.tiles[coord[0] - 1, coord[1] + 1].touch(coord)
+
+		
 
 
 	def getTile(self, coord):
@@ -172,6 +176,19 @@ class Level:
 	def die(self):
 		self.load_level(self.path)
 
+	def loop(self):
+		# for tile in self.tiles.values():
+			# tile.loop()
+		
+		for y in range(0, self.game.y):
+			
+			more = True
+			while more:
+				more = False
+				for x in range(0, self.game.x):
+					tile = self.getTile((x,y))
+					more = tile.loop() or more
+
 	def move_sprite(self):
 		for tile in self.tiles.values():
 			if tile.topTile:
@@ -179,8 +196,8 @@ class Level:
 		#for tile in self.tiles.values():
 			#tile.move_sprite()
 		
-		for y in range(0, self.game.y):
-			for x in range(0, self.game.x):
+		for y in reversed(range(0, self.game.y)):
+			for x in reversed(range(0, self.game.x)):
 				tile = self.getTile((x,y))
 				tile.move_sprite()
 
