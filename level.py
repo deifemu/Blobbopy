@@ -30,7 +30,10 @@ class Level:
 			tile.render()
 
 	def collect_item(self, item):
-		self.item = item
+		if not self.item:
+			self.item = item
+			return True
+		return False
 
 
 

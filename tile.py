@@ -51,6 +51,11 @@ def makeTile(level, coord, id):
 	elif id == 51:
 		lvl =  FreeTile()
 		lvl.put_top(TreeTile(id))
+
+	elif id == 199:
+		lvl =  FreeTile()
+		lvl.put_top(RaftTile())
+
 	elif id == 89:
 		lvl =  FreeTile()
 		lvl.put_top(WeedTile(id, 8))
@@ -64,6 +69,9 @@ def makeTile(level, coord, id):
 		lvl =  FreeTile()
 		lvl.put_top(WeedTile(id, 4))
 	elif id == 209:
+		lvl =  FreeTile()
+		lvl.put_top(PushStoneTile(id))
+	elif id == 197: # hidden 
 		lvl =  FreeTile()
 		lvl.put_top(PushStoneTile(id))
 	elif id == 104:
@@ -131,6 +139,15 @@ def makeTile(level, coord, id):
 	elif id == 210:
 		lvl =  FreeTile()
 		lvl.put_top(plugTile(id))
+	elif id == 129:
+		lvl =  FreeTile()
+		lvl.put_top(keyTile(id))
+	elif id == 37:
+		lvl =  FreeTile()
+		lvl.put_top(DoorTile(id))
+	elif id == 193:
+		lvl =  FreeTile()
+		lvl.put_top(bloonTile(id))
 
 	else:
 		print(f"unknown tile {id}")
@@ -221,10 +238,13 @@ class Tile:
 					self.level.switch_top(self.coord, coord)
 				return True
 		else:
-			return self.topTile.enter(self.coord, coord)
+			if self.topTile.enter(self.coord, coord):
+				if self.level.getTile(coord).leave(self.coord):
+					self.level.switch_top(self.coord, coord)
 		return False
 	
 	def leave(self, coord):
+		# print(f"lili {self}")
 		if not self.topTile:
 			return True
 		else:
@@ -311,9 +331,9 @@ class EndTile(Tile):
 
 	def enter(self, coord):
 		if self.hidden:
-			if self.level.getTile(coord).leave(self.coord):
-				self.level.switch_top(self.coord, coord)
-				return True
+			self.level.getTile(coord).leave(self.coord)
+			self.level.switch_top(self.coord, coord)
+			return True
 		if self.level.chests == 0:
 			self.level.game.next_level()
 			return True
@@ -355,7 +375,7 @@ class WaterTile(Tile):
 				self.level.renderTile128(self.coord, self.id)
 				
 		else:
-			self.topTile.render(self.coord)
+			self.topTile.render()
 
 	def get_dir(self):
 		if self.dir > 0 and self.dir < 10:
@@ -380,8 +400,8 @@ class oneWayTile(Tile):
 			(self.dir == 2) and (coord[1] >= self.get_coord()[1])) or (
 			(self.dir == 8) and (coord[1] <= self.get_coord()[1])):
 
-			if self.level.getTile(coord).leave(self.coord):
-				self.level.switch_top(self.coord, coord)
+			self.level.getTile(coord).leave(self.coord)
+			self.level.switch_top(self.coord, coord)
 			return True
 		return False
 	
@@ -402,3 +422,6 @@ class iceTile(Tile):
 		tile = self.level.getTile(ncoord)
 		tile.enter(self.coord)
 		return True
+	
+
+

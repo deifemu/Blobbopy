@@ -65,8 +65,8 @@ class BlobboTile(TopTile):
 	def __init__(self):
 		super().__init__(112)
 		self.glasses_count = 30
-	def enter(self, mycoord, coord):
-		b = self.floor_tile.leave()
+	# def enter(self, mycoord, coord):
+	# 	b = self.floor_tile.leave()
 	def is_blobbo(self):
 		return True
 	
@@ -91,7 +91,7 @@ class ChestTile(TopTile):
 	def enter(self, mycoord, coord):
 		self.floor_tile.remove_top()
 		self.level.open_chest()
-		self.level.switch_top(mycoord, coord)
+		# self.level.switch_top(mycoord, coord)
 		return True
 	
 
@@ -120,7 +120,7 @@ class BallTile(TopTile):
 	def enter(self, mycoord, coord):
 		# push the ball horizontally
 		if self.level.push(coord, mycoord, xOnly=True):
-			self.level.switch_top(mycoord, coord)
+			# self.level.switch_top(mycoord, coord)
 			return True
 		return False
 
@@ -182,10 +182,11 @@ class BallTile(TopTile):
 
 class AxTile(TopTile):
 	def enter(self, mycoord, coord):
-		self.level.collect_item("ax")
-		self.floor_tile.remove_top()
-		self.level.switch_top(mycoord, coord)
-		return True
+		if self.level.collect_item("ax"):
+			self.floor_tile.remove_top()
+			# self.level.switch_top(mycoord, coord)
+			return True
+		return False
 
 
 class ArrowTile(TopTile):
@@ -205,7 +206,7 @@ class ArrowTile(TopTile):
 		coord3 = 2*mycoord[0] - coord[0], 2*mycoord[1] - coord[1]
 		if self.level.getTile(coord3).is_free():
 			self.level.switch_top(coord3, mycoord)
-			self.level.switch_top(coord, mycoord)
+			# self.level.switch_top(coord, mycoord)
 
 	def move_sprite(self):
 		more_move = True
@@ -253,12 +254,11 @@ class ArrowTile(TopTile):
 class TreeTile(TopTile):
 	def enter(self, mycoord, coord):
 		if self.level.item == "ax":
-			# self.level.replaceTile(mycoord, RaftTile())
 			tile = self.floor_tile
 			tile.remove_top()
 			tile.put_top(RaftTile())
-
-			return True
+			# stay put
+			return False
 		return False
 
 class WeedTile(TopTile):
@@ -309,19 +309,19 @@ class WeedTile(TopTile):
 
 class PushStoneTile(TopTile):
 	def enter(self, mycoord, coord):
-		if self.level.push(coord, mycoord):
-			self.level.switch_top(mycoord, coord)
+		return self.level.push(coord, mycoord)
+			# self.level.switch_top(mycoord, coord)
 
 class plugTile(TopTile):
 	def enter(self, mycoord, coord):
 		coord3 = 2*mycoord[0] - coord[0], 2*mycoord[1] - coord[1]
 		if self.level.getTile(coord3).is_free():
 			self.level.switch_top(coord3, mycoord)
-			self.level.switch_top(mycoord, coord)
+			# self.level.switch_top(mycoord, coord)
 		if self.level.getTile(coord3).is_hole():
 			self.level.getTile(coord3).remove_top()
 			self.level.getTile(mycoord).remove_top()
-			self.level.switch_top(mycoord, coord)
+			# self.level.switch_top(mycoord, coord)
 
 class SmileTile(TopTile):
 	def is_smilie(self):
@@ -372,27 +372,29 @@ class RaftTile(TopTile):
 		self.is_moved = False
 
 	def enter(self, mycoord, coord):
-		nexttile = self.level.getTile(coord)
+		# nexttile = self.level.getTile(coord)
 		# print(nexttile,  self.level.getTile(mycoord))
 		if self.floor_tile.is_water():
-			# print("on raft")
+			print("on raft")
 			# self.level.switch_top(mycoord, coord)
 			self.blobbo = self.level.getTile(coord).remove_top()
+			print(self.blobbo)
 			self.blobbo.floor_tile = self
 			self.render()
 			self.active = True
+			return False
 
 		else:
 			# self.level.push(coord, mycoord)
 			coord3 = 2*mycoord[0] - coord[0], 2*mycoord[1] - coord[1]
-			# print("raft", coord3, mycoord, coord)
+			print("raft", coord3, mycoord, coord)
 			self.level.switch_top(mycoord, coord3)
-			self.level.switch_top(coord, mycoord)
+			# self.level.switch_top(coord, mycoord)
 			
 		return True
 	
 	def leave(self, mycoord, coord):
-		# print("leave water")
+		print("leave water")
 		nexttile = self.level.getTile(coord)
 		nexttile.put_top(self.blobbo)
 		self.blobbo = None
@@ -446,7 +448,9 @@ class TeleportTile(TopTile):
 				tile.remove_top()
 				self.level.getTile(mycoord).remove_top()
 				self.level.switch_top(coord, tile.coord)
-		return True
+				return False
+				# this does not call leave!
+		return False
 	
 
 class spiderTile(TopTile):
@@ -532,25 +536,29 @@ class rollerScateTile(TopTile):
 		print(mycoord, coord, ofs)
 
 		coord = mycoord
+		free = False
 		while True:
 			coord = (coord[0] + ofs[0], coord[1] + ofs[1])
 			tile = self.level.getTile(coord)
 			print(tile)
 			if tile.is_free():
-				print(self.get_coord(), coord)
-				self.level.switch_top(self.get_coord(), coord)
+				# print(self.get_coord(), coord)
+
+				# self.level.switch_top(self.get_coord(), coord)
+				free = True
 				self.level.game.updateScreen()
 				time.sleep(0.02)
 			else:
 				break
-		return True
+		return free
 	
 class glassesTile(TopTile):
 	def enter(self, mycoord, coord):
-		self.level.collect_item("glasses")
-		self.floor_tile.remove_top()
-		self.level.switch_top(mycoord, coord)
-		return True
+		if self.level.collect_item("glasses"):
+			self.floor_tile.remove_top()
+			self.level.switch_top(mycoord, coord)
+			return True
+		return False
 	
 class halveChestTile(TopTile):
 	def __init__(self, id, left):
@@ -564,13 +572,16 @@ class halveChestTile(TopTile):
 		
 		if tile.is_free():
 			self.level.switch_top(coord3, mycoord)
-			self.level.switch_top(mycoord, coord)
+			# self.level.switch_top(mycoord, coord)
+			return True
 		if tile.topTile and tile.topTile.__class__.__name__ == "halveChestTile":
 			if self.left != tile.topTile.left:
 				tile.remove_top()
 				self.level.getTile(mycoord).remove_top()
 				tile.put_top(ChestTile())
-				self.level.switch_top(mycoord, coord)
+				# self.level.switch_top(mycoord, coord)
+				return True
+		return False
 
 
 class snailTile(TopTile):
@@ -688,3 +699,26 @@ class multyArrowTile(TopTile):
 class holeTile(TopTile):
 	pass
 
+
+
+class keyTile(TopTile):
+	def enter(self, mycoord, coord):
+		if self.level.collect_item("key"):
+			self.floor_tile.remove_top()
+			# self.level.switch_top(mycoord, coord)
+			return True
+		return False
+	
+
+class bloonTile(TopTile):
+	def __init__(self, id):
+		super().__init__(id)
+
+class DoorTile(TopTile):
+	def enter(self, mycoord, coord):
+		if self.level.item == "key":
+			self.level.item = ""
+			self.floor_tile.remove_top()
+			# self.level.switch_top(mycoord, coord)
+			return True
+		return False
