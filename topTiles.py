@@ -181,6 +181,9 @@ class BallTile(TopTile):
 
 
 class AxTile(TopTile):
+	def __init__(self):
+		super().__init__(132)
+
 	def enter(self, mycoord, coord):
 		if self.level.collect_item("ax"):
 			self.floor_tile.remove_top()
@@ -199,6 +202,13 @@ class ArrowTile(TopTile):
 		self.fireing = False
 		super().__init__(id)
 
+		self.is_active = False
+
+	def touch(self, coord):
+		self.is_active = True
+
+	
+
 
 	def enter(self, mycoord, coord):
 		if coord[0] != mycoord[0]:
@@ -209,6 +219,8 @@ class ArrowTile(TopTile):
 			# self.level.switch_top(coord, mycoord)
 
 	def move_sprite(self):
+		if not self.is_active:
+			return
 		more_move = True
 		fireing = False
 		while more_move:
@@ -553,6 +565,8 @@ class rollerScateTile(TopTile):
 		return free
 	
 class glassesTile(TopTile):
+	def __init__(self):
+		super().__init__(133)
 	def enter(self, mycoord, coord):
 		if self.level.collect_item("glasses"):
 			self.floor_tile.remove_top()
@@ -702,6 +716,8 @@ class holeTile(TopTile):
 
 
 class keyTile(TopTile):
+	def __init__(self):
+		super().__init__(129)
 	def enter(self, mycoord, coord):
 		if self.level.collect_item("key"):
 			self.floor_tile.remove_top()
@@ -713,6 +729,27 @@ class keyTile(TopTile):
 class bloonTile(TopTile):
 	def __init__(self, id):
 		super().__init__(id)
+		self.is_active = False
+
+	def touch(self, coord):
+		self.is_active = True
+
+	def move_sprite(self):
+		more_move = True
+		if not self.is_active:
+			return
+		while more_move:
+			more_move = False
+			mycoord = self.get_coord()
+			coord = mycoord[0], mycoord[1] -1
+
+			if self.level.getTile(coord).is_free():
+				self.level.switch_top(coord, mycoord)
+				more_move = True
+			if more_move:
+				self.level.game.updateScreen()
+				time.sleep(0.02)
+
 
 class DoorTile(TopTile):
 	def enter(self, mycoord, coord):
@@ -722,3 +759,22 @@ class DoorTile(TopTile):
 			# self.level.switch_top(mycoord, coord)
 			return True
 		return False
+	
+class MirrorTile(TopTile):
+	def __init__(self, id, right_up):
+		super().__init__(id)
+		self.right_up = right_up
+
+	def enter(self, mycoord, coord):
+		return self.level.push(coord, mycoord)
+	
+class RemoteTile(TopTile):
+	
+	def __init__(self):
+		super().__init__(137)
+	def enter(self, mycoord, coord):
+		if self.level.collect_item("remote"):
+			self.floor_tile.remove_top()
+			return True
+		return False
+	

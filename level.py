@@ -34,6 +34,32 @@ class Level:
 			self.item = item
 			return True
 		return False
+	
+	def drop_item(self):
+		if not self.item:
+			return
+		
+		coord = self.blobbo.get_coord()
+		ncoord = self.move_coord(self.last_dir, coord)
+		target_tile = self.getTile(ncoord)
+
+		if not target_tile.is_free() or target_tile.topTile != None:
+			return
+		
+		if self.item == "glasses":
+			# lvl.put_top(glassesTile())
+			return
+
+		if self.item == "ax":
+			target_tile.put_top(AxTile())
+		elif self.item == "key":
+			target_tile.put_top(keyTile())
+		elif self.item == "remote":
+			target_tile.put_top(RemoteTile())
+
+		self.item = ""
+		self.move_sprite()
+		
 
 
 
@@ -99,6 +125,7 @@ class Level:
 		coord = self.blobbo.get_coord()
 		ncoord = self.move_coord(dir, coord)
 		target_tile = self.getTile(ncoord)
+		self.last_dir = dir
 
 		if target_tile.enter(coord):
 			self.touch_neibours(coord)

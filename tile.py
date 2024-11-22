@@ -47,7 +47,7 @@ def makeTile(level, coord, id):
 		lvl =  WallTile(id, slope_left=(id==38), slope_right=(id==39))
 	elif id == 132:
 		lvl =  FreeTile()
-		lvl.put_top(AxTile(id))
+		lvl.put_top(AxTile())
 	elif id == 51:
 		lvl =  FreeTile()
 		lvl.put_top(TreeTile(id))
@@ -105,7 +105,7 @@ def makeTile(level, coord, id):
 		lvl.put_top(sunTile(id))
 	elif id == 133:
 		lvl =  FreeTile()
-		lvl.put_top(glassesTile(id))
+		lvl.put_top(glassesTile())
 	elif id == 33:
 		lvl =  oneWayTile(id, 6)
 	elif id == 34:
@@ -133,21 +133,37 @@ def makeTile(level, coord, id):
 	elif id == 50:
 		lvl =  FreeTile()
 		lvl.put_top(tvTile(id))
-	elif id == 103:
-		lvl =  FreeTile()
-		lvl.put_top(multyArrowTile(id))
+	# elif id == 103:
+	# 	lvl =  FreeTile()
+	# 	lvl.put_top(multyArrowTile(id))
 	elif id == 210:
 		lvl =  FreeTile()
 		lvl.put_top(plugTile(id))
 	elif id == 129:
 		lvl =  FreeTile()
-		lvl.put_top(keyTile(id))
+		lvl.put_top(keyTile())
 	elif id == 37:
 		lvl =  FreeTile()
 		lvl.put_top(DoorTile(id))
 	elif id == 193:
 		lvl =  FreeTile()
 		lvl.put_top(bloonTile(id))
+	elif id == 214:
+		lvl =  FreeTile()
+		lvl.put_top(MirrorTile(id, False))
+	elif id == 213:
+		lvl =  FreeTile()
+		lvl.put_top(MirrorTile(id, True))
+	elif id == 137:
+		lvl =  FreeTile()
+		lvl.put_top(RemoteTile())
+	elif id == 79:
+		lvl =  RemoteDoorTile()
+
+
+
+
+		
 
 	else:
 		print(f"unknown tile {id}")
@@ -163,7 +179,7 @@ class Tile:
 		self.set_id(id)
 		self.level = None
 		self.topTile = None
-		self.can_enter = False
+		self._can_enter = False
 
 	def set_id(self, id):
 		self.id = id
@@ -191,8 +207,11 @@ class Tile:
 	def get_coord(self):
 		return self.coord
 
+	def can_enter(self):
+		return self._can_enter
+	
 	def is_free(self):
-		return self.can_enter and not self.topTile
+		return self.can_enter() and not self.topTile
 	
 	def is_blobbo(self):
 		if not self.topTile:
@@ -208,12 +227,12 @@ class Tile:
 		
 	def slope_right(self):
 		if not self.topTile:
-			return self.can_enter
+			return self.can_enter()
 		else:
 			return self.topTile.slope_right()
 	def slope_left(self):
 		if not self.topTile:
-			return self.can_enter
+			return self.can_enter()
 		else:
 			return self.topTile.slope_left()
 	def is_teleport_target(self):
@@ -233,7 +252,7 @@ class Tile:
 
 	def enter(self, coord):
 		if not self.topTile:
-			if self.can_enter:
+			if self.can_enter():
 				if self.level.getTile(coord).leave(self.coord):
 					self.level.switch_top(self.coord, coord)
 				return True
@@ -293,7 +312,7 @@ class FreeTile(Tile):
 	def __init__(self):
 		# self.blobbo = blobbo
 		super().__init__(0)
-		self.can_enter = True
+		self._can_enter = True
 
 
 class WallTile(Tile):
@@ -325,7 +344,7 @@ class EndTile(Tile):
 			super().__init__(0)
 		else:
 			super().__init__(id)
-		self.can_enter = True
+		self._can_enter = True
 		self.hidden = hidden
 
 
@@ -356,7 +375,7 @@ class WaterTile(Tile):
 	def __init__(self, id=80, dir=0):
 		super().__init__(id)
 		self.dir = dir
-		self.can_enter = False
+		self._can_enter = False
 		self.debug = False
 	def is_water(self):
 		return True
@@ -409,7 +428,7 @@ class oneWayTile(Tile):
 class iceTile(Tile):
 	def __init__(self, id):
 		super().__init__(id)
-		self.can_enter = True
+		self._can_enter = True
 
 	def enter(self, coord):
 		ofs = self.coord[0] - coord[0], self.coord[1] - coord[1]
@@ -424,4 +443,43 @@ class iceTile(Tile):
 		return True
 	
 
+class RemoteDoorTile(Tile):
+	def __init__(self):
+		super().__init__(79)
+		self.is_open = False
+
+	def can_enter(self):
+		return self.is_open
+
+	def render(self):
+		if self.is_blobbo():
+			self.level.renderTile128(self.coord, 112)
+		elif self.is_open:
+			self.level.renderTile128(self.coord, 78)
+		else:
+			self.level.renderTile128(self.coord, 79)
+
+	def move_sprite(self):
+		for dir in [2,4,6,8]:
+			coord = self.get_coord()
+			while True:
+				coord = self.level.move_coord(dir, coord)
+				tile = self.level.getTile(coord)
+				if not tile.is_blobbo() and not tile.can_enter() and not tile.is_water():
+					break
+				if tile.topTile and tile.topTile.__class__.__name__ == "RemoteTile":
+					self.is_open = True
+					self.render()
+					return
+				if tile.topTile and tile.topTile.__class__.__name__ == "MirrorTile":
+					if tile.topTile.right_up:
+						dir = {4:8, 6:2, 8:4, 2:6}[dir]
+					else:
+						dir = {4:2, 6:8, 2:4, 8:6}[dir]
+				elif tile.topTile and not tile.is_blobbo():
+					break
+		if self.is_open:
+			self.is_open = False
+			self.render()
+				
 

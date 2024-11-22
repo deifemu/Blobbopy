@@ -95,6 +95,8 @@ class Game:
 						self.next_level()
 					elif (pressed_key == 98): #b
 						self.last_level()
+					elif (pressed_key == 100): #d
+						self.level.drop_item()
 					else:
 						print(f"key {pressed_key}")
 					
