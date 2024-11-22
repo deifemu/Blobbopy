@@ -778,3 +778,51 @@ class RemoteTile(TopTile):
 			return True
 		return False
 	
+
+
+class MultiplierTile(TopTile):
+	
+	def __init__(self):
+		super().__init__(240)
+		self.wait = 10
+
+	def enter(self, mycoord, coord):
+		self.level.die()
+		return False
+	
+	def move_sprite(self):
+		self.wait -= 1
+		if self.wait > 0:
+			return
+		found = False
+		for dir in [2,4,6,8]:
+			coord = self.get_coord()
+			coord = self.level.move_coord(dir, coord)
+			tile = self.level.getTile(coord)
+			if tile.is_blobbo():
+				self.level.die()
+			if tile.is_free():
+				print("put")
+				tile.put_top(MultiplierTile())
+				found = True
+		if found:
+			self.floor_tile.remove_top()
+			print("remove")
+		self.wait = 10
+
+
+
+
+
+
+	def render(self):
+		print(f"render {self.wait}")
+		if self.wait <= 2:
+			self.level.renderTile128(self.get_coord(), 255)
+		elif self.wait <= 4:
+			self.level.renderTile128(self.get_coord(), 254)
+		else:
+			self.level.renderTile128(self.get_coord(), 240)
+		
+
+	

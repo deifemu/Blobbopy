@@ -41,7 +41,7 @@ def makeTile(level, coord, id):
 	elif id == 57:
 		lvl =  FreeTile()
 		lvl.put_top(TeleportTargetTile())
-	elif id in list(range(1,33)) + list(range(224, 241)):
+	elif id in list(range(1,33)) + list(range(224, 240)):
 		lvl =  WallTile(id)
 	elif id in [38, 39]:
 		lvl =  WallTile(id, slope_left=(id==38), slope_right=(id==39))
@@ -133,9 +133,9 @@ def makeTile(level, coord, id):
 	elif id == 50:
 		lvl =  FreeTile()
 		lvl.put_top(tvTile(id))
-	# elif id == 103:
-	# 	lvl =  FreeTile()
-	# 	lvl.put_top(multyArrowTile(id))
+	elif id == 103:
+		lvl =  FreeTile()
+		lvl.put_top(multyArrowTile(id))
 	elif id == 210:
 		lvl =  FreeTile()
 		lvl.put_top(plugTile(id))
@@ -159,6 +159,11 @@ def makeTile(level, coord, id):
 		lvl.put_top(RemoteTile())
 	elif id == 79:
 		lvl =  RemoteDoorTile()
+	elif id == 240:
+		lvl =  FreeTile()
+		lvl.put_top(MultiplierTile())
+
+		
 
 
 
