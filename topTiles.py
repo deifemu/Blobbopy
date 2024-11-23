@@ -76,32 +76,75 @@ class BlobboTile(TopTile):
 		else:
 			self.level.renderTile128(self.get_coord(), self.id)
 
-	def move(self, coord, ncoord):
-		self.level.game.play_sound("rsrc2_snd_141_Slide")
+	def animate_nopush(self, coord, ncoord):
+		self.level.game.play_sound("rsrc2_snd_142_No Push")
+		pixmap = "blobboNoPush"
+		gl = 0
+		if self.level.item == "glasses":
+			gl = 2
+		if ncoord[0] < coord[0]:
+			self.level.renderTile(coord, (0,1+gl), pixmap)
+		elif ncoord[0] > coord[0]:
+			self.level.renderTile(coord, (0,0+gl), pixmap)
+		elif ncoord[1] < coord[1]:
+			self.level.renderTile(coord, (1,0+gl), pixmap)
+		elif ncoord[1] > coord[1]:
+			self.level.renderTile(coord, (1,1+gl), pixmap)
+		self.level.game.updateScreen()
+		time.sleep(0.1)
+		self.level.getTile(coord).render()
+		self.level.game.updateScreen()
 
+
+	def animate_move(self, coord, ncoord):
+		pixmap = "blobbomove"
+		self.level.game.play_sound("rsrc2_snd_141_Slide")
 		gl = 0
 		if self.level.item == "glasses":
 			gl = 2
 
 		if ncoord[0] < coord[0]:
-			self.level.renderTile(coord, (1,0+gl), "blobbomove")
-			self.level.renderTile(ncoord, (0,0+gl), "blobbomove")
+			self.level.renderTile(coord, (1,0+gl), pixmap)
+			self.level.renderTile(ncoord, (0,0+gl), pixmap)
 		elif ncoord[0] > coord[0]:
-			self.level.renderTile(coord, (0,1+gl), "blobbomove")
-			self.level.renderTile(ncoord, (1,1+gl), "blobbomove")
+			self.level.renderTile(coord, (0,1+gl), pixmap)
+			self.level.renderTile(ncoord, (1,1+gl), pixmap)
 		elif ncoord[1] < coord[1]:
-			self.level.renderTile(coord, (2,1+gl), "blobbomove")
-			self.level.renderTile(ncoord, (2,0+gl), "blobbomove")
+			self.level.renderTile(coord, (2,1+gl), pixmap)
+			self.level.renderTile(ncoord, (2,0+gl), pixmap)
 		elif ncoord[1] > coord[1]:
-			self.level.renderTile(coord, (3,0+gl), "blobbomove")
-			self.level.renderTile(ncoord, (3,1+gl), "blobbomove")
+			self.level.renderTile(coord, (3,0+gl), pixmap)
+			self.level.renderTile(ncoord, (3,1+gl), pixmap)
 		self.level.game.updateScreen()
 		time.sleep(0.1)
 		self.level.getTile(coord).render()
 		self.level.getTile(ncoord).render()
 		self.level.game.updateScreen()
 		
+	def animate_push(self, coord, ncoord):
+		pixmap = "blobboPush"
+		self.level.game.play_sound("rsrc2_snd_143_Roll")
+		gl = 0
+		if self.level.item == "glasses":
+			gl = 2
 
+		if ncoord[0] > coord[0]:
+			self.level.renderTile(ncoord, (1,0+gl), pixmap)
+			self.level.renderTile(coord, (0,0+gl), pixmap)
+		elif ncoord[0] < coord[0]:
+			self.level.renderTile(ncoord, (0,1+gl), pixmap)
+			self.level.renderTile(coord, (1,1+gl), pixmap)
+		elif ncoord[1] < coord[1]:
+			self.level.renderTile(coord, (2,1+gl), pixmap)
+			self.level.renderTile(ncoord, (2,0+gl), pixmap)
+		elif ncoord[1] > coord[1]:
+			self.level.renderTile(coord, (3,0+gl), pixmap)
+			self.level.renderTile(ncoord, (3,1+gl), pixmap)
+		self.level.game.updateScreen()
+		time.sleep(0.1)
+		self.level.getTile(coord).render()
+		self.level.getTile(ncoord).render()
+		self.level.game.updateScreen()
 		
 
 
@@ -151,7 +194,7 @@ class BallTile(TopTile):
 	def enter(self, mycoord, coord):
 		# push the ball horizontally
 		if self.level.push(coord, mycoord, xOnly=True):
-			self.level.game.play_sound("rsrc2_snd_143_Roll")
+			# self.level.game.play_sound("rsrc2_snd_143_Roll")
 			return True
 		return False
 
@@ -276,6 +319,17 @@ class ArrowTile(TopTile):
 			
 			if self.level.getTile(coord).is_blobbo():
 				if fireing:
+					self.level.game.play_sound("rsrc2_snd_134_Ow")
+
+					for x in range(0, 5):
+						self.level.renderTile(mycoord, (x*2+1, 0), "blobbopierce")
+						self.level.renderTile(coord, (x*2, 0), "blobbopierce")
+						self.level.game.updateScreen()
+						time.sleep(0.2)
+					self.level.getTile(mycoord).render()
+					self.level.getTile(coord).render()
+					self.level.game.updateScreen()
+
 					self.level.die()
 			elif self.level.getTile(coord).is_free():
 				self.level.switch_top(coord, mycoord)
@@ -389,6 +443,7 @@ class SmileTile(TopTile):
 	def move_sprite(self):
 		coord = self.get_coord()
 		blobbo = self.level.blobbo.get_coord()
+		moved = False
 		if coord[0] == blobbo[0]:
 			movedir = -1 if coord[1]> blobbo[1] else 1
 			for i in range(coord[1] + movedir, blobbo[1], movedir ):
@@ -405,6 +460,7 @@ class SmileTile(TopTile):
 					source.render()
 					self.level.game.updateScreen()
 					time.sleep(0.02)
+					moved = True
 
 		if coord[1] == blobbo[1]:
 			movedir = -1 if coord[0]> blobbo[0] else 1
@@ -422,6 +478,10 @@ class SmileTile(TopTile):
 					source.render()
 					self.level.game.updateScreen()
 					time.sleep(0.02)
+					moved = True
+					
+		if moved:
+			self.level.game.play_sound("rsrc2_snd_128_Thud")
 
 class RaftTile(TopTile):
 	def __init__(self):
@@ -583,6 +643,9 @@ class sunTile(TopTile):
 				self.level.game.play_sound("rsrc2_snd_159_Zap")
 				self.level.die()
 			if tile.topTile and tile.topTile.__class__.__name__ == "holeTile":
+				tile = self.level.getTile(self.get_coord())
+				tile.remove_top()
+				self.level.animateSingle(coord, "sunhole", maxx=4, y=0, sleep=0.2)
 				self.floor_tile.remove_top()
 				return
 			if tile.is_free():

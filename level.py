@@ -105,7 +105,7 @@ class Level:
 	def open_chest(self):
 		self.chests -= 1
 		if self.chests == 0:
-			self.level.game.play_sound("rsrc2_snd_155_All")
+			self.game.play_sound("rsrc2_snd_155_All")
 
 
 
@@ -142,7 +142,7 @@ class Level:
 		self.last_dir = dir
 
 		if target_tile.enter(coord):
-			self.blobbo.move(coord, ncoord)
+			# self.blobbo.animate_move(coord, ncoord)
 			self.touch_neibours(coord)
 			self.touch_neibours(ncoord)
 		self.move_sprite()

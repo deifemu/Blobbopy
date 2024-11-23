@@ -23,8 +23,17 @@ class Game:
 		self.tilepixlist = {}
 		self.tilepixlist["tiles"] = pygame.image.load("data/blobbo.rsrc2_PMP8_128.bin.bmp").convert_alpha()
 		self.tilepixlist["blobbomove"] = pygame.image.load("data/blobbo.rsrc2_PMP8_129_Move.bin.bmp").convert_alpha()
+		self.tilepixlist["blobboNoPush"] = pygame.image.load("data/blobbo.rsrc2_PMP8_131_NoPush.bin.bmp").convert_alpha()
+		self.tilepixlist["blobboPush"] = pygame.image.load("data/blobbo.rsrc2_PMP8_130_Push.bin.bmp").convert_alpha()
 		self.tilepixlist["tree"] = pygame.image.load("data/blobbo.rsrc2_PMP8_151.bin.bmp").convert_alpha()
 		self.tilepixlist["blobbosquash"] = pygame.image.load("data/blobbo.rsrc2_PMP8_201.bin.bmp").convert_alpha()
+		self.tilepixlist["blobboburn"] = pygame.image.load("data/blobbo.rsrc2_PMP8_202.bin.bmp").convert_alpha()
+		self.tilepixlist["blobbopierce"] = pygame.image.load("data/blobbo.rsrc2_PMP8_204.bin.bmp").convert_alpha()
+		self.tilepixlist["stairs"] = pygame.image.load("data/blobbo.rsrc2_PMP8_200_Down Stairs.bin.bmp").convert_alpha()
+		self.tilepixlist["drown"] = pygame.image.load("data/blobbo.rsrc2_PMP8_206.bin.bmp").convert_alpha()
+		self.tilepixlist["sunhole"] = pygame.image.load("data/blobbo.rsrc2_PMP8_153.bin.bmp").convert_alpha()
+
+		
 		self.soundlist = {}
 
 		self.level = Level(self)

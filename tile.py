@@ -216,7 +216,8 @@ class Tile:
 		return self._can_enter
 	
 	def is_free(self):
-		return self.can_enter() and not self.topTile
+		# return self.can_enter() and not self.topTile
+		return self.__class__.__name__ == "FreeTile" and not self.topTile
 	
 	def is_blobbo(self):
 		if not self.topTile:
@@ -258,11 +259,18 @@ class Tile:
 	def enter(self, coord):
 		if not self.topTile:
 			if self.can_enter():
+				
 				if self.level.getTile(coord).leave(self.coord):
 					self.level.switch_top(self.coord, coord)
+				self.level.blobbo.animate_move(coord, self.coord)
 				return True
+			else:
+				# self.level.game.play_sound("rsrc2_snd_142_No Push")
+				self.level.blobbo.animate_nopush(coord, self.coord)
+				
 		else:
 			if self.topTile.enter(self.coord, coord):
+				self.level.blobbo.animate_push(coord, self.coord)
 				if self.level.getTile(coord).leave(self.coord):
 					self.level.switch_top(self.coord, coord)
 		return False
@@ -337,6 +345,7 @@ class WallTile(Tile):
 class FireTile(Tile):
 	def enter(self, coord):
 		self.level.game.play_sound("rsrc2_snd_132_Woosh")
+		self.level.animateSingle(coord, "blobboburn", maxx=6, y=0, sleep=0.2)
 		self.level.die()
 		return False
 
@@ -360,7 +369,13 @@ class EndTile(Tile):
 			self.level.switch_top(self.coord, coord)
 			return True
 		if self.level.chests == 0:
+			tile = self.level.getTile(coord)
+			tile.remove_top()
 			self.level.game.play_sound("rsrc2_snd_138_End Screen")
+			if self.level.item == "glasses":
+				self.level.animateSingle(self.coord, "stairs", maxx=6, y=1, sleep=0.2)
+			else:
+				self.level.animateSingle(self.coord, "stairs", maxx=6, y=0, sleep=0.2)
 			self.level.game.next_level()
 			return True
 		return False
@@ -388,7 +403,10 @@ class WaterTile(Tile):
 		return True
 	def enter(self, coord):
 		if not self.topTile:
-			print("die in water")
+			tile = self.level.getTile(coord)
+			tile.remove_top()
+			self.level.game.play_sound("rsrc2_snd_149_Drown")
+			self.level.animateSingle(self.coord, "drown", maxx=7, y=0, sleep=0.2)
 			self.level.die()
 			return False
 		super().enter(coord)
