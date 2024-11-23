@@ -17,19 +17,19 @@ class Game:
 		self.oldClick = False
 		self.levelnr = 128
 
-
 		self.realscreen = pygame.display.set_mode((512*2, 320*2), flags=pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
 		self.screen = pygame.Surface((self.x*16, self.y*16))
-		
-		
-		self.tilepix = pygame.image.load("00128.png").convert_alpha()
-		#self.screen.blit(self.tilepix, (0,0))
 
+		self.tilepixlist = {}
+		self.tilepixlist["tiles"] = pygame.image.load("data/blobbo.rsrc2_PMP8_128.bin.bmp").convert_alpha()
+		self.tilepixlist["blobbomove"] = pygame.image.load("data/blobbo.rsrc2_PMP8_129_Move.bin.bmp").convert_alpha()
+		self.tilepixlist["tree"] = pygame.image.load("data/blobbo.rsrc2_PMP8_151.bin.bmp").convert_alpha()
+		self.tilepixlist["blobbosquash"] = pygame.image.load("data/blobbo.rsrc2_PMP8_201.bin.bmp").convert_alpha()
+		self.soundlist = {}
 
 		self.level = Level(self)
 		self.level.load_level(f"levels/00{self.levelnr}.blev")
 		
-		# self.load_level("levels/00128.blev")
 
 	def screensize(self):
 		return  self.realscreen.get_rect().size
@@ -47,6 +47,12 @@ class Game:
 	def updateScreen(self):
 		self.realscreen.blit(pygame.transform.scale(self.screen, self.screensize()), (0, 0))
 		pygame.display.flip()
+
+	def play_sound(self, name):
+		if name not in self.soundlist:
+			self.soundlist[name] = pygame.mixer.Sound(f"data/blobbo.{name}.wav")
+		self.soundlist[name].play()
+
 
 	def play(self):
 		clock = pygame.time.Clock()

@@ -24,6 +24,8 @@ class Level:
 		self.chests = 0
 		self.item = ""
 
+	
+
 
 	def render(self):
 		for tile in self.tiles.values():
@@ -64,11 +66,21 @@ class Level:
 
 
 
-
+	def renderTile(self, coord, pixCoord, pixmap):
+		self.screen.blit(self.game.tilepixlist[pixmap], (coord[0]*16, coord[1] * 16), (pixCoord[0]*16, pixCoord[1]*16, 16, 16))
 
 	def renderTile128(self, coord, id):
 		pixCoord = id >> 4, id & 0x0F
-		self.screen.blit(self.game.tilepix, (coord[0]*16, coord[1] * 16), (pixCoord[0]*16, pixCoord[1]*16, 16, 16))
+		self.renderTile(coord, pixCoord, "tiles")
+		# self.screen.blit(self.game.tilepixlist["tiles"], (coord[0]*16, coord[1] * 16), (pixCoord[0]*16, pixCoord[1]*16, 16, 16))
+
+	def animateSingle(self, coord, pixmap, maxx, y, sleep=0.1):
+		for x in range(0, maxx):
+			self.renderTile(coord, (x,y), pixmap)
+			self.game.updateScreen()
+			time.sleep(sleep)
+		self.getTile(coord).render()
+		self.game.updateScreen()
 
 
 	def load_level(self, path):
@@ -92,6 +104,8 @@ class Level:
 		self.chests += 1
 	def open_chest(self):
 		self.chests -= 1
+		if self.chests == 0:
+			self.level.game.play_sound("rsrc2_snd_155_All")
 
 
 
@@ -128,6 +142,7 @@ class Level:
 		self.last_dir = dir
 
 		if target_tile.enter(coord):
+			self.blobbo.move(coord, ncoord)
 			self.touch_neibours(coord)
 			self.touch_neibours(ncoord)
 		self.move_sprite()

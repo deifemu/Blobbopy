@@ -336,6 +336,7 @@ class WallTile(Tile):
 
 class FireTile(Tile):
 	def enter(self, coord):
+		self.level.game.play_sound("rsrc2_snd_132_Woosh")
 		self.level.die()
 		return False
 
@@ -359,6 +360,7 @@ class EndTile(Tile):
 			self.level.switch_top(self.coord, coord)
 			return True
 		if self.level.chests == 0:
+			self.level.game.play_sound("rsrc2_snd_138_End Screen")
 			self.level.game.next_level()
 			return True
 		return False

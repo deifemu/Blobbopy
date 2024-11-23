@@ -76,6 +76,35 @@ class BlobboTile(TopTile):
 		else:
 			self.level.renderTile128(self.get_coord(), self.id)
 
+	def move(self, coord, ncoord):
+		self.level.game.play_sound("rsrc2_snd_141_Slide")
+
+		gl = 0
+		if self.level.item == "glasses":
+			gl = 2
+
+		if ncoord[0] < coord[0]:
+			self.level.renderTile(coord, (1,0+gl), "blobbomove")
+			self.level.renderTile(ncoord, (0,0+gl), "blobbomove")
+		elif ncoord[0] > coord[0]:
+			self.level.renderTile(coord, (0,1+gl), "blobbomove")
+			self.level.renderTile(ncoord, (1,1+gl), "blobbomove")
+		elif ncoord[1] < coord[1]:
+			self.level.renderTile(coord, (2,1+gl), "blobbomove")
+			self.level.renderTile(ncoord, (2,0+gl), "blobbomove")
+		elif ncoord[1] > coord[1]:
+			self.level.renderTile(coord, (3,0+gl), "blobbomove")
+			self.level.renderTile(ncoord, (3,1+gl), "blobbomove")
+		self.level.game.updateScreen()
+		time.sleep(0.1)
+		self.level.getTile(coord).render()
+		self.level.getTile(ncoord).render()
+		self.level.game.updateScreen()
+		
+
+		
+
+
 
 	def move_sprite(self):
 		if self.level.item == "glasses":
@@ -86,9 +115,11 @@ class BlobboTile(TopTile):
 
 
 class ChestTile(TopTile):
+	
 	def __init__(self):
 		super().__init__(128)
 	def enter(self, mycoord, coord):
+		self.level.game.play_sound("rsrc2_snd_133_Yeah")
 		self.floor_tile.remove_top()
 		self.level.open_chest()
 		# self.level.switch_top(mycoord, coord)
@@ -120,7 +151,7 @@ class BallTile(TopTile):
 	def enter(self, mycoord, coord):
 		# push the ball horizontally
 		if self.level.push(coord, mycoord, xOnly=True):
-			# self.level.switch_top(mycoord, coord)
+			self.level.game.play_sound("rsrc2_snd_143_Roll")
 			return True
 		return False
 
@@ -128,6 +159,7 @@ class BallTile(TopTile):
 		# if not self.is_active:
 		# 	return False
 		
+		firstdrop = True
 		drop = False
 		moreLoop = True
 		while moreLoop:
@@ -140,17 +172,21 @@ class BallTile(TopTile):
 			coord2 = mycoord[0] +1, mycoord[1] + 1
 			coord2C = mycoord[0] +1, mycoord[1]
 
-			# balls do not drop on the initial screen until they have been touched
-			# if self.is_initial:
-			# 	self.is_initial = False
-			# 	if self.level.tiles[*coord0].is_free() or (
-			# 			self.level.tiles[*coord0].slope_right() and self.level.tiles[*coord1].is_free() and self.level.tiles[*coord1C].is_free()) or (
-			# 			self.level.tiles[*coord0].slope_left() and self.level.tiles[*coord2].is_free() and self.level.tiles[*coord2C].is_free()):
-			# 		self.is_active = False
-			# 		return False
-
 			if self.level.tiles[*coord0].is_blobbo():
 				if self.dropping:
+					# self.level.animateSingle(mycoord, "blobbosquash", maxx=5, y=0, sleep=0.2)
+					self.level.game.play_sound("rsrc2_snd_135_squash die")
+
+					for x in range(0, 5):
+						self.level.renderTile(mycoord, (x,0), "blobbosquash")
+						self.level.renderTile(coord0, (x,1), "blobbosquash")
+						self.level.game.updateScreen()
+						time.sleep(0.2)
+					self.level.getTile(mycoord).render()
+					self.level.getTile(coord0).render()
+					self.level.game.updateScreen()
+
+					
 					self.level.die()
 			elif self.level.tiles[*coord0].is_free():
 				# print(f"drop 1, {mycoord}")
@@ -174,6 +210,9 @@ class BallTile(TopTile):
 				self.dropping = False
 			
 			if moreLoop:
+				if firstdrop:
+					firstdrop = False
+					self.level.game.play_sound("rsrc2_snd_128_Thud")
 				self.level.game.updateScreen()
 				time.sleep(0.02)
 		return drop
@@ -223,6 +262,7 @@ class ArrowTile(TopTile):
 			return
 		more_move = True
 		fireing = False
+		firstFire = True
 		while more_move:
 			more_move = False
 			mycoord = self.get_coord()
@@ -252,6 +292,9 @@ class ArrowTile(TopTile):
 				fireing = True
 
 			if more_move:
+				if firstFire:
+					self.level.game.play_sound("rsrc2_snd_136_Twang")
+					firstFire = False
 				self.level.game.updateScreen()
 				time.sleep(0.02)
 
@@ -266,6 +309,8 @@ class ArrowTile(TopTile):
 class TreeTile(TopTile):
 	def enter(self, mycoord, coord):
 		if self.level.item == "ax":
+			self.level.game.play_sound("rsrc2_snd_160_FallingTree")
+			self.level.animateSingle(mycoord, "tree", maxx=12, y=0, sleep=0.1)
 			tile = self.floor_tile
 			tile.remove_top()
 			tile.put_top(RaftTile())
@@ -321,7 +366,10 @@ class WeedTile(TopTile):
 
 class PushStoneTile(TopTile):
 	def enter(self, mycoord, coord):
-		return self.level.push(coord, mycoord)
+		if  self.level.push(coord, mycoord):
+			self.level.game.play_sound("rsrc2_snd_143_Roll")
+			return True
+		return False
 			# self.level.switch_top(mycoord, coord)
 
 class plugTile(TopTile):
@@ -480,7 +528,11 @@ class spiderTile(TopTile):
 		while True:
 			coord = self.level.move_coord(dir, self.get_coord())
 			tile = self.level.getTile(coord)
+			if tile.is_blobbo():
+				self.level.game.play_sound("rsrc2_snd_153_SpiderBite")
+				self.level.die()
 			if tile.topTile and tile.topTile.__class__.__name__ == "spiderWebTile":
+				self.level.game.play_sound("rsrc2_snd_154_SpiderWeb")
 				tile.remove_top()
 				self.floor_tile.remove_top()
 				self.floor_tile.put_top(ChestTile())
@@ -528,6 +580,7 @@ class sunTile(TopTile):
 		for coord in [coord, coord1, coord2]:
 			tile = self.level.getTile(coord)
 			if tile.is_blobbo():
+				self.level.game.play_sound("rsrc2_snd_159_Zap")
 				self.level.die()
 			if tile.topTile and tile.topTile.__class__.__name__ == "holeTile":
 				self.floor_tile.remove_top()
@@ -545,18 +598,16 @@ class sunTile(TopTile):
 class rollerScateTile(TopTile):
 	def enter(self, mycoord, coord):
 		ofs = mycoord[0] - coord[0], mycoord[1] - coord[1]
-		print(mycoord, coord, ofs)
 
 		coord = mycoord
 		free = False
 		while True:
 			coord = (coord[0] + ofs[0], coord[1] + ofs[1])
 			tile = self.level.getTile(coord)
-			print(tile)
 			if tile.is_free():
-				# print(self.get_coord(), coord)
-
-				# self.level.switch_top(self.get_coord(), coord)
+				if not free:
+					self.level.game.play_sound("rsrc2_snd_145_Skate Roll")
+				self.level.switch_top(self.get_coord(), coord)
 				free = True
 				self.level.game.updateScreen()
 				time.sleep(0.02)
