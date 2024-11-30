@@ -217,7 +217,7 @@ class Tile:
 	
 	def is_free(self):
 		# return self.can_enter() and not self.topTile
-		return self.__class__.__name__ == "FreeTile" and not self.topTile
+		return self.is_type("FreeTile") and not self.topTile
 	
 	def is_blobbo(self):
 		if not self.topTile:
@@ -230,6 +230,9 @@ class Tile:
 			return False
 		else:
 			return self.topTile.is_smilie()
+		
+	def is_type(self, name):
+		return self.__class__.__name__ == name
 		
 	def slope_right(self):
 		if not self.topTile:
@@ -253,7 +256,7 @@ class Tile:
 		if not self.topTile:
 			return False
 		else:
-			return self.topTile.__class__.__name__ == "holeTile"
+			return self.topTile.is_type("holeTile")
 
 
 	def enter(self, coord):
@@ -438,7 +441,7 @@ class oneWayTile(Tile):
 		self.dir = dir
 
 	def enter(self, coord):
-		print(coord, self.get_coord())
+		# print(coord, self.get_coord())
 		if ((self.dir == 4) and (coord[0] >= self.get_coord()[0])) or (
 			(self.dir == 6) and (coord[0] <= self.get_coord()[0])) or (
 			(self.dir == 2) and (coord[1] >= self.get_coord()[1])) or (
@@ -475,6 +478,9 @@ class RemoteDoorTile(Tile):
 
 	def can_enter(self):
 		return self.is_open
+	
+	def open(self):
+		self.is_open =True
 
 	def render(self):
 		if self.is_blobbo():
@@ -484,27 +490,6 @@ class RemoteDoorTile(Tile):
 		else:
 			self.level.renderTile128(self.coord, 79)
 
-	def move_sprite(self):
-		for dir in [2,4,6,8]:
-			coord = self.get_coord()
-			while True:
-				coord = self.level.move_coord(dir, coord)
-				tile = self.level.getTile(coord)
-				if not tile.is_blobbo() and not tile.can_enter() and not tile.is_water():
-					break
-				if tile.topTile and tile.topTile.__class__.__name__ == "RemoteTile":
-					self.is_open = True
-					self.render()
-					return
-				if tile.topTile and tile.topTile.__class__.__name__ == "MirrorTile":
-					if tile.topTile.right_up:
-						dir = {4:8, 6:2, 8:4, 2:6}[dir]
-					else:
-						dir = {4:2, 6:8, 2:4, 8:6}[dir]
-				elif tile.topTile and not tile.is_blobbo():
-					break
-		if self.is_open:
-			self.is_open = False
-			self.render()
+	
 				
 

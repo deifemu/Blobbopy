@@ -58,6 +58,7 @@ class Level:
 			target_tile.put_top(keyTile())
 		elif self.item == "remote":
 			target_tile.put_top(RemoteTile())
+			target_tile.topTile.activate(self.last_dir)
 
 		self.item = ""
 		self.move_sprite()
@@ -74,6 +75,12 @@ class Level:
 		self.renderTile(coord, pixCoord, "tiles")
 		# self.screen.blit(self.game.tilepixlist["tiles"], (coord[0]*16, coord[1] * 16), (pixCoord[0]*16, pixCoord[1]*16, 16, 16))
 
+	def renderLine(self, coord, vertical):
+		if vertical:
+			pygame.draw.rect(self.game.screen, (255,0,0), pygame.Rect(coord[0]*16+7, coord[1]*16, 2, 16),  2)
+		else:
+			pygame.draw.rect(self.game.screen, (255,0,0), pygame.Rect(coord[0]*16, coord[1]*16+7, 16, 2),  2)
+
 	def animateSingle(self, coord, pixmap, maxx, y, sleep=0.1):
 		for x in range(0, maxx):
 			self.renderTile(coord, (x,y), pixmap)
@@ -89,7 +96,6 @@ class Level:
 		self.path = path
 		with open(path, "rb") as f:
 			data = f.read()
-		#print_data(data)
 		raw = Level.unpack(data)
 		for n,t in enumerate(raw):
 			x = n // self.y

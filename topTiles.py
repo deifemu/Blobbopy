@@ -30,6 +30,9 @@ class TopTile:
 	def is_smilie(self):
 		return False
 	
+	def is_type(self, name):
+		return self.__class__.__name__ == name
+	
 	def is_teleport_target(self):
 		return False
 
@@ -98,7 +101,7 @@ class BlobboTile(TopTile):
 
 	def animate_move(self, coord, ncoord):
 		pixmap = "blobbomove"
-		self.level.game.play_sound("rsrc2_snd_141_Slide")
+		# self.level.game.play_sound("rsrc2_snd_141_Slide")
 		gl = 0
 		if self.level.item == "glasses":
 			gl = 2
@@ -591,7 +594,7 @@ class spiderTile(TopTile):
 			if tile.is_blobbo():
 				self.level.game.play_sound("rsrc2_snd_153_SpiderBite")
 				self.level.die()
-			if tile.topTile and tile.topTile.__class__.__name__ == "spiderWebTile":
+			if tile.topTile and tile.topTile.is_type("spiderWebTile"):
 				self.level.game.play_sound("rsrc2_snd_154_SpiderWeb")
 				tile.remove_top()
 				self.floor_tile.remove_top()
@@ -642,7 +645,7 @@ class sunTile(TopTile):
 			if tile.is_blobbo():
 				self.level.game.play_sound("rsrc2_snd_159_Zap")
 				self.level.die()
-			if tile.topTile and tile.topTile.__class__.__name__ == "holeTile":
+			if tile.topTile and tile.topTile.is_type("holeTile"):
 				tile = self.level.getTile(self.get_coord())
 				tile.remove_top()
 				self.level.animateSingle(coord, "sunhole", maxx=4, y=0, sleep=0.2)
@@ -702,7 +705,7 @@ class halveChestTile(TopTile):
 			self.level.switch_top(coord3, mycoord)
 			# self.level.switch_top(mycoord, coord)
 			return True
-		if tile.topTile and tile.topTile.__class__.__name__ == "halveChestTile":
+		if tile.topTile and tile.topTile.is_type("halveChestTile"):
 			if self.left != tile.topTile.left:
 				tile.remove_top()
 				self.level.getTile(mycoord).remove_top()
@@ -745,7 +748,7 @@ class snailTile(TopTile):
 		tile = self.level.getTile(coord)
 		attachcoord = self.level.move_coord(attach, coord)
 		attachtile = self.level.getTile(attachcoord)
-		if tile.topTile and tile.topTile.__class__.__name__ == "tvTile":
+		if tile.topTile and tile.topTile.is_type("tvTile"):
 			tile.remove_top()
 			self.floor_tile.remove_top()
 			tile.put_top(ChestTile())
@@ -883,7 +886,6 @@ class MirrorTile(TopTile):
 		return self.level.push(coord, mycoord)
 	
 class RemoteTile(TopTile):
-	
 	def __init__(self):
 		super().__init__(137)
 	def enter(self, mycoord, coord):
@@ -892,13 +894,38 @@ class RemoteTile(TopTile):
 			return True
 		return False
 	
+	def activate(self, dir):
+		coord = self.get_coord()
+		while True:
+			coord = self.level.move_coord(dir, coord)
+			tile = self.level.getTile(coord)
+			if tile.is_type("RemoteDoorTile"):
+				tile.open()
+				break
+			elif not tile.can_enter() and not tile.is_water():
+				break
+			elif tile.topTile and tile.topTile.is_type("MirrorTile"):
+				if tile.topTile.right_up:
+					dir = {4:8, 6:2, 8:4, 2:6}[dir]
+				else:
+					dir = {4:2, 6:8, 2:4, 8:6}[dir]
+			else:
+				self.level.renderLine(coord, dir in [2,8])
+		self.level.game.updateScreen()
+		time.sleep(0.5)
+		self.level.render()
+		self.level.game.updateScreen()
+
+		
+
+
 
 
 class MultiplierTile(TopTile):
 	
 	def __init__(self):
 		super().__init__(240)
-		self.wait = 10
+		self.wait = 15
 
 	def enter(self, mycoord, coord):
 		self.level.die()
@@ -916,13 +943,13 @@ class MultiplierTile(TopTile):
 			if tile.is_blobbo():
 				self.level.die()
 			if tile.is_free():
-				print("put")
+				# print("put")
 				tile.put_top(MultiplierTile())
 				found = True
 		if found:
 			self.floor_tile.remove_top()
-			print("remove")
-		self.wait = 10
+			# print("remove")
+		self.wait = 15
 
 
 
@@ -930,10 +957,10 @@ class MultiplierTile(TopTile):
 
 
 	def render(self):
-		print(f"render {self.wait}")
-		if self.wait <= 2:
+		# print(f"render {self.wait}")
+		if self.wait <= 1:
 			self.level.renderTile128(self.get_coord(), 255)
-		elif self.wait <= 4:
+		elif self.wait <= 2:
 			self.level.renderTile128(self.get_coord(), 254)
 		else:
 			self.level.renderTile128(self.get_coord(), 240)
