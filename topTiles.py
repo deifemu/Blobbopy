@@ -800,6 +800,9 @@ class multyArrowTile(TopTile):
 		super().__init__(id)
 		self.is_moved = False
 
+	def enter(self, mycoord, coord):
+		self.level.die()
+
 	def move_sprite(self):
 		for move in [(1,0), (-1,0), (0,1), (0,-1)]:
 			coord = self.get_coord()
@@ -828,6 +831,9 @@ class evilMultyArrowTile(TopTile):
 	def __init__(self, id):
 		super().__init__(id)
 		self.is_moved = False
+
+	def enter(self, mycoord, coord):
+		self.level.die()
 
 	def move_sprite(self):
 		for move in [(1,0), (-1,0), (0,1), (0,-1)]:
@@ -1007,19 +1013,9 @@ class ScisorTile(TopTile):
 	def enter(self, mycoord, coord):
 		if self.level.collect_item("scisor"):
 			self.floor_tile.remove_top()
-			# self.level.switch_top(mycoord, coord)
 			return True
 		return False
 
-# class MirrorTile(TopTile):
-# 	def __init__(self, id, right_up):
-# 		super().__init__(id)
-# 		self.right_up = right_up
-
-# 	def enter(self, mycoord, coord):
-# 		self.level.game.play_sound("rsrc2_snd_143_Roll")
-# 		return self.level.push(coord, mycoord)
-	
 
 class DrillTile(TopTile):
 	def __init__(self, id):
@@ -1053,4 +1049,58 @@ class StoneTile(TopTile):
 		if self.level.collect_item("stone"):
 			self.floor_tile.remove_top()
 			return True
+		return False
+	
+	
+class PipeTile(TopTile):
+	def __init__(self, id, a, b):
+		super().__init__(id)
+		self.dirs = [a,b]
+
+		self.invertdirs = {2:8, 8:2, 4:6, 6:4 }
+
+	def tunnel(self, dir):
+		if dir in self.dirs:
+			return self.level.move_coord(dir, self.get_coord())
+		return None
+
+	def enter(self, mycoord, coord):
+		dir = self.level.get_dir(mycoord, coord)
+		idir = self.invertdirs[dir]
+		print(f"pip {dir}")
+
+		if idir not in self.dirs:
+			print("push")
+			return self.level.push(coord, mycoord)
+		
+
+		self.tunnel(coord, dir)
+		return False
+
+
+
+	def tunnel(self, coord, dir):
+		# print(f"tunnel {self.get_coord()}")
+		idir = self.invertdirs[dir]
+		if idir not in self.dirs:
+			return False
+		if idir == self.dirs[0]:
+			newdir = self.dirs[1]
+		else:
+			newdir = self.dirs[0]
+		target = self.level.move_coord(newdir, self.get_coord())
+	
+		tile = self.level.getTile(target)
+		# print(self.get_coord(), target)
+		
+		if tile.is_type("PipeTile"):
+			# print("rec pipe")
+			tile.topTile.tunnel(coord, newdir)
+		elif tile.can_enter():
+			# print("free")
+			if tile.topTile:
+				tile.topTile.enter(self.get_coord(), coord)
+			self.level.switch_top(coord, target)
+			
+			return False
 		return False

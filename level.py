@@ -168,6 +168,17 @@ class Level:
 			tile2.put_top(a)
 			
 
+	def get_dir(self, source, target):
+		if target[0] > source[0]:
+			return 4
+		if target[0] < source[0]:
+			return 6
+		if target[1] > source[1]:
+			return 2
+		if target[1] < source[1]:
+			return 8
+		return 0
+
 
 	def move_coord(self, dir, coord):
 		if dir == 1:

@@ -15,7 +15,7 @@ class Game:
 	def __init__(self, editLevel=""):
 		pygame.init()
 		self.oldClick = False
-		self.levelnr = 128
+		self.levelnr = 128 + 15
 
 		self.realscreen = pygame.display.set_mode((512*2, 320*2), flags=pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
 		self.screen = pygame.Surface((self.x*16, self.y*16))
@@ -69,7 +69,6 @@ class Game:
 
 		self.updateScreen()
 		exitGame = False
-		level = 128
 		while not exitGame:
 
 			key = 0
@@ -92,11 +91,8 @@ class Game:
 						move = 8
 					elif (pressed_key == 1073741903):
 						move = 6
-						# self.level.load_level(f"levels/00{level}.blev")
 					elif (pressed_key == 1073741904):
 						move = 4
-						level -= 1
-						# self.level.load_level(f"levels/00{level}.blev")
 					elif (pressed_key == 113):
 						exitGame = True
 					elif (pressed_key == 13): #enter

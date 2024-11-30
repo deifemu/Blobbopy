@@ -186,6 +186,25 @@ def makeTile(level, coord, id):
 		lvl =  FreeTile()
 		lvl.put_top(StoneTile())
 
+	elif id == 168:
+		lvl =  FreeTile()
+		lvl.put_top(PipeTile(id, 4, 6))
+	elif id == 169:
+		lvl =  FreeTile()
+		lvl.put_top(PipeTile(id, 2, 8))
+	elif id == 170:
+		lvl =  FreeTile()
+		lvl.put_top(PipeTile(id, 4, 8))
+	elif id == 171:
+		lvl =  FreeTile()
+		lvl.put_top(PipeTile(id, 6, 8))
+	elif id == 172:
+		lvl =  FreeTile()
+		lvl.put_top(PipeTile(id, 2, 6))
+	elif id == 173:
+		lvl =  FreeTile()
+		lvl.put_top(PipeTile(id, 2, 4))
+
 		
 
 
@@ -256,6 +275,8 @@ class Tile:
 			return self.topTile.is_smilie()
 		
 	def is_type(self, name):
+		if self.topTile:
+			return self.topTile.is_type(name)
 		return self.__class__.__name__ == name
 		
 	def slope_right(self):
