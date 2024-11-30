@@ -32,6 +32,7 @@ class Game:
 		self.tilepixlist["stairs"] = pygame.image.load("data/blobbo.rsrc2_PMP8_200_Down Stairs.bin.bmp").convert_alpha()
 		self.tilepixlist["drown"] = pygame.image.load("data/blobbo.rsrc2_PMP8_206.bin.bmp").convert_alpha()
 		self.tilepixlist["sunhole"] = pygame.image.load("data/blobbo.rsrc2_PMP8_153.bin.bmp").convert_alpha()
+		self.tilepixlist["drill"] = pygame.image.load("data/blobbo.rsrc2_PMP8_150.bin.bmp").convert_alpha()
 
 		
 		self.soundlist = {}

@@ -11,6 +11,8 @@ from topTiles import *
 def makeTile(level, coord, id):
 	if id == 0:
 		lvl = FreeTile()
+	elif id == 48:
+		lvl = InvisibleTile()
 	elif id == 112:
 		lvl =  FreeTile() # blobbo
 		b = BlobboTile()
@@ -41,7 +43,7 @@ def makeTile(level, coord, id):
 	elif id == 57:
 		lvl =  FreeTile()
 		lvl.put_top(TeleportTargetTile())
-	elif id in list(range(1,33)) + list(range(224, 240)):
+	elif id in list(range(1,33)) + list(range(224, 240)) + [49]:
 		lvl =  WallTile(id)
 	elif id in [38, 39]:
 		lvl =  WallTile(id, slope_left=(id==38), slope_right=(id==39))
@@ -136,6 +138,9 @@ def makeTile(level, coord, id):
 	elif id == 103:
 		lvl =  FreeTile()
 		lvl.put_top(multyArrowTile(id))
+	elif id == 102:
+		lvl =  FreeTile()
+		lvl.put_top(evilMultyArrowTile(id))
 	elif id == 210:
 		lvl =  FreeTile()
 		lvl.put_top(plugTile(id))
@@ -162,6 +167,24 @@ def makeTile(level, coord, id):
 	elif id == 240:
 		lvl =  FreeTile()
 		lvl.put_top(MultiplierTile())
+	elif id == 135:
+		lvl =  FreeTile()
+		lvl.put_top(BombTile())
+	elif id == 134:
+		lvl =  FreeTile()
+		lvl.put_top(ScisorTile())
+	elif id == 212:
+		lvl =  FreeTile()
+		lvl.put_top(DrillTile(id))
+	elif id == 46:
+		lvl =  DrillHoleTile()
+		level.add_chest()
+	elif id == 208:
+		lvl =  FreeTile()
+		lvl.put_top(DoughnutTile(id))
+	elif id == 136:
+		lvl =  FreeTile()
+		lvl.put_top(StoneTile())
 
 		
 
@@ -185,6 +208,7 @@ class Tile:
 		self.level = None
 		self.topTile = None
 		self._can_enter = False
+		self._free = False
 
 	def set_id(self, id):
 		self.id = id
@@ -217,7 +241,7 @@ class Tile:
 	
 	def is_free(self):
 		# return self.can_enter() and not self.topTile
-		return self.is_type("FreeTile") and not self.topTile
+		return self._free and not self.topTile
 	
 	def is_blobbo(self):
 		if not self.topTile:
@@ -321,15 +345,40 @@ class Tile:
 	def click(self):
 		print(self)
 
+	def drill(self):
+		return False
+
 
 
 
 class FreeTile(Tile):
 	def __init__(self):
-		# self.blobbo = blobbo
 		super().__init__(0)
 		self._can_enter = True
+		self._free = True
 
+
+class DrillHoleTile(Tile):
+	def __init__(self):
+		super().__init__(46)
+		self._can_enter = True
+		self.drilled = False
+		self._free = True
+
+	def drill(self):
+		if self.drilled:
+			return False
+		self.drilled = True
+		self.set_id(0)
+		self.render()
+		return True
+
+
+
+class InvisibleTile(Tile):
+	def __init__(self):
+		super().__init__(48)
+		self._can_enter = True
 
 class WallTile(Tile):
 	def __init__(self, id, slope_left=False, slope_right=False):

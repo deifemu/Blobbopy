@@ -126,7 +126,7 @@ class BlobboTile(TopTile):
 		
 	def animate_push(self, coord, ncoord):
 		pixmap = "blobboPush"
-		self.level.game.play_sound("rsrc2_snd_143_Roll")
+		# self.level.game.play_sound("rsrc2_snd_143_Roll")
 		gl = 0
 		if self.level.item == "glasses":
 			gl = 2
@@ -197,7 +197,7 @@ class BallTile(TopTile):
 	def enter(self, mycoord, coord):
 		# push the ball horizontally
 		if self.level.push(coord, mycoord, xOnly=True):
-			# self.level.game.play_sound("rsrc2_snd_143_Roll")
+			self.level.game.play_sound("rsrc2_snd_143_Roll")
 			return True
 		return False
 
@@ -824,7 +824,36 @@ class multyArrowTile(TopTile):
 			self.level.game.updateScreen()
 			time.sleep(0.04)
 
+class evilMultyArrowTile(TopTile):
+	def __init__(self, id):
+		super().__init__(id)
+		self.is_moved = False
 
+	def move_sprite(self):
+		for move in [(1,0), (-1,0), (0,1), (0,-1)]:
+			coord = self.get_coord()
+			while True:
+				coord = (coord[0] + move[0], coord[1] + move[1])
+				target = self.level.getTile(coord)
+				if target == None:
+					break
+				if target.is_blobbo():
+					self.move(move)
+					return
+
+	def move(self, move):
+		coord = self.get_coord()
+		while True:
+			coord = (coord[0] + move[0], coord[1] + move[1])
+			target = self.level.getTile(coord)
+			if target.is_blobbo():
+				self.level.die()
+				return
+			if not target.is_free():
+				return
+			self.level.switch_top(self.get_coord(), coord)
+			self.level.game.updateScreen()
+			time.sleep(0.04)
 
 
 class holeTile(TopTile):
@@ -883,6 +912,7 @@ class MirrorTile(TopTile):
 		self.right_up = right_up
 
 	def enter(self, mycoord, coord):
+		self.level.game.play_sound("rsrc2_snd_143_Roll")
 		return self.level.push(coord, mycoord)
 	
 class RemoteTile(TopTile):
@@ -922,7 +952,6 @@ class RemoteTile(TopTile):
 
 
 class MultiplierTile(TopTile):
-	
 	def __init__(self):
 		super().__init__(240)
 		self.wait = 15
@@ -951,11 +980,6 @@ class MultiplierTile(TopTile):
 			# print("remove")
 		self.wait = 15
 
-
-
-
-
-
 	def render(self):
 		# print(f"render {self.wait}")
 		if self.wait <= 1:
@@ -966,4 +990,67 @@ class MultiplierTile(TopTile):
 			self.level.renderTile128(self.get_coord(), 240)
 		
 
+class BombTile(TopTile):
+	def __init__(self):
+		super().__init__(135)
+	def enter(self, mycoord, coord):
+		if self.level.collect_item("bomb"):
+			self.floor_tile.remove_top()
+			# self.level.switch_top(mycoord, coord)
+			return True
+		return False
+
+
+class ScisorTile(TopTile):
+	def __init__(self):
+		super().__init__(134)
+	def enter(self, mycoord, coord):
+		if self.level.collect_item("scisor"):
+			self.floor_tile.remove_top()
+			# self.level.switch_top(mycoord, coord)
+			return True
+		return False
+
+# class MirrorTile(TopTile):
+# 	def __init__(self, id, right_up):
+# 		super().__init__(id)
+# 		self.right_up = right_up
+
+# 	def enter(self, mycoord, coord):
+# 		self.level.game.play_sound("rsrc2_snd_143_Roll")
+# 		return self.level.push(coord, mycoord)
 	
+
+class DrillTile(TopTile):
+	def __init__(self, id):
+		super().__init__(id)
+
+	def enter(self, mycoord, coord):
+		coord3 = 2*mycoord[0] - coord[0], 2*mycoord[1] - coord[1]
+		pushTarget = self.level.getTile(coord3)
+		target = self.level.getTile(mycoord)
+		if pushTarget.drill():
+			
+			target.remove_top()
+			self.level.game.play_sound("rsrc2_snd_146_Drill")
+			self.level.animateSingle(coord3, "drill", maxx=14, y=0, sleep=0.2)
+			pushTarget.put_top(ChestTile())
+			return True
+		self.level.game.play_sound("rsrc2_snd_143_Roll")
+		return self.level.push(coord, mycoord)
+
+class DoughnutTile(TopTile):
+	def __init__(self, id):
+		super().__init__(id)
+	def enter(self, mycoord, coord):
+		self.floor_tile.remove_top()
+		return True
+	
+class StoneTile(TopTile):
+	def __init__(self):
+		super().__init__(136)
+	def enter(self, mycoord, coord):
+		if self.level.collect_item("stone"):
+			self.floor_tile.remove_top()
+			return True
+		return False

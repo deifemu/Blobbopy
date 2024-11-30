@@ -59,6 +59,9 @@ class Level:
 		elif self.item == "remote":
 			target_tile.put_top(RemoteTile())
 			target_tile.topTile.activate(self.last_dir)
+		elif self.item == "stone":
+			target_tile.put_top(StoneTile())
+			
 
 		self.item = ""
 		self.move_sprite()
@@ -207,7 +210,10 @@ class Level:
 
 
 	def getTile(self, coord):
-		return self.tiles[coord]
+		try:
+			return self.tiles[coord]
+		except:
+			return None
 
 
 	def push(self, coordBlobbo, coordObject, xOnly = False):
